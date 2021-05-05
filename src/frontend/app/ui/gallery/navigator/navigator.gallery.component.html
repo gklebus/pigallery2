@@ -15,6 +15,9 @@
   </ol>
 
   <div class="right-side">
+    <a *ngIf="config.Client.Other.enableDownloadZip && directory && ItemCount > 0" [href]="getDownloadZipLink()"
+      [queryParams]="queryService.getParams()">Download</a>
+    <div class="divider" *ngIf="directory && ItemCount > 0">&nbsp;</div>
     <div class="photos-count" *ngIf="ItemCount > 0 && config.Client.Other.NavBar.showItemCount">
       {{ItemCount}} <span i18n>items</span>
     </div>

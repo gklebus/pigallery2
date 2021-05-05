@@ -98,7 +98,7 @@ export class RenderingMWs {
         delete (err.details); // do not send back error object to the client side
 
         // hide error details for non developers
-        if (!(req.session.user && req.session.user.role >= UserRoles.Developer)) {
+        if (!(req.session && req.session.user && req.session.user.role >= UserRoles.Developer)) {
           delete (err.detailsStr);
         }
       }

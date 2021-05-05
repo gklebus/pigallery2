@@ -24,19 +24,25 @@ export class MediaIcon {
   }
 
   getRelativePath(): string {
-    return Utils.concatUrls(this.media.directory.path, this.media.directory.name, this.media.name);
+    return Utils.concatUrls(this.media.directory.path,
+      this.media.directory.name,
+      this.media.name)
+      // do not escape all urls with encodeURIComponent because that make the URL ugly and not needed
+      // do not escape before concatUrls as that would make prevent optimizations
+      .replace(new RegExp('%', 'g'), '%25') // order important
+      .replace(new RegExp('#', 'g'), '%23')
+      .replace(new RegExp('\\$', 'g'), '%24');
   }
 
   getIconPath(): string {
     return Utils.concatUrls(Config.Client.urlBase,
       '/api/gallery/content/',
-      this.media.directory.path, this.media.directory.name, this.media.name, 'icon');
+      this.getRelativePath(), 'icon');
   }
 
   getMediaPath(): string {
     return Utils.concatUrls(Config.Client.urlBase,
-      '/api/gallery/content/',
-      this.media.directory.path, this.media.directory.name, this.media.name);
+      '/api/gallery/content/', this.getRelativePath());
   }
 
   getBestFitMediaPath(): string {

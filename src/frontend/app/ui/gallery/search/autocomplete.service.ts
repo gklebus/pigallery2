@@ -68,17 +68,21 @@ export class AutoCompleteService {
     items = items || new BehaviorSubject([]);
 
     const cached = this.galleryCacheService.getAutoComplete(text, type);
-    if (cached == null) {
-      const acParams: any = {};
-      if (type) {
-        acParams[QueryParams.gallery.search.type] = type;
+    try {
+      if (cached == null) {
+        const acParams: any = {};
+        if (type) {
+          acParams[QueryParams.gallery.search.type] = type;
+        }
+        this.networkService.getJson<IAutoCompleteItem[]>('/autocomplete/' + text, acParams).then(ret => {
+          this.galleryCacheService.setAutoComplete(text, type, ret);
+          items.next(this.sortResults(text, ret.map(i => this.ACItemToRenderable(i, fullText)).concat(items.value)));
+        });
+      } else {
+        items.next(this.sortResults(text, cached.map(i => this.ACItemToRenderable(i, fullText)).concat(items.value)));
       }
-      this.networkService.getJson<IAutoCompleteItem[]>('/autocomplete/' + text, acParams).then(ret => {
-        this.galleryCacheService.setAutoComplete(text, type, ret);
-        items.next(this.sortResults(text, ret.map(i => this.ACItemToRenderable(i, fullText)).concat(items.value)));
-      });
-    } else {
-      items.next(this.sortResults(text, cached.map(i => this.ACItemToRenderable(i, fullText)).concat(items.value)));
+    } catch (e) {
+      console.error(e);
     }
     return items;
   }
@@ -135,6 +139,15 @@ export class AutoCompleteService {
 
   private sortResults(text: string, items: RenderableAutoCompleteItem[]): RenderableAutoCompleteItem[] {
     return items.sort((a, b) => {
+      // prioritize persons higher
+      if (a.type !== b.type) {
+        if (a.type === SearchQueryTypes.person) {
+          return -1;
+        } else if (b.type === SearchQueryTypes.person) {
+          return 1;
+        }
+      }
+
       if ((a.text.startsWith(text) && b.text.startsWith(text)) ||
         (!a.text.startsWith(text) && !b.text.startsWith(text))) {
         return a.text.localeCompare(b.text);

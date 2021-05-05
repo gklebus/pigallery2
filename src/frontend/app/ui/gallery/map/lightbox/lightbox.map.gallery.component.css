@@ -135,5 +135,11 @@
   line-height: 39px;
 }
 
+::ng-deep img.leaflet-marker-icon.photo-icon {
+  border-radius: 50%!important;
+  border: 2px rgba(0, 123, 255, 0.6) solid;
+}
+
+
 
 

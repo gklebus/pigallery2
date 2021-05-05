@@ -106,7 +106,7 @@ export class Utils {
       .replace(new RegExp('/+', 'g'), '/');
   }
 
-  static concatUrls(...args: Array<string>): string {
+  static concatUrls(...args: string[]): string {
     let url = '';
     for (const item of args) {
       if (item === '' || typeof item === 'undefined') {

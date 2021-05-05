@@ -1,7 +1,7 @@
 import {Utils} from '../../../../common/Utils';
 import {MediaIcon} from './MediaIcon';
 import {Config} from '../../../../common/config/public/Config';
-import {MediaBaseDTO, MediaDTO, MediaDTOUtils} from '../../../../common/entities/MediaDTO';
+import {MediaBaseDTO, MediaDTOUtils} from '../../../../common/entities/MediaDTO';
 
 export class Media extends MediaIcon {
 
@@ -54,8 +54,7 @@ export class Media extends MediaIcon {
   getReplacementThumbnailPath(): string {
     const size = this.getReplacementThumbnailSize();
     return Utils.concatUrls(Config.Client.urlBase,
-      '/api/gallery/content/',
-      this.media.directory.path, this.media.directory.name, this.media.name, 'thumbnail', size.toString());
+      '/api/gallery/content/', this.getRelativePath(), 'thumbnail', size.toString());
 
   }
 
@@ -66,8 +65,7 @@ export class Media extends MediaIcon {
   getThumbnailPath(): string {
     const size = this.getThumbnailSize();
     return Utils.concatUrls(Config.Client.urlBase,
-      '/api/gallery/content/',
-      this.media.directory.path, this.media.directory.name, this.media.name, 'thumbnail', size.toString());
+      '/api/gallery/content/', this.getRelativePath(), 'thumbnail', size.toString());
   }
 
 

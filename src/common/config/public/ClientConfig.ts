@@ -105,6 +105,8 @@ export class ClientOtherConfig {
   NavBar: NavBarConfig = new NavBarConfig();
   @ConfigProperty()
   captionFirstNaming: boolean = false; // shows the caption instead of the filename in the photo grid
+  @ConfigProperty()
+  enableDownloadZip: boolean = false;
 }
 
 @SubConfigClass()

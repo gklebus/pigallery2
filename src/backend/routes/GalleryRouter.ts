@@ -23,6 +23,7 @@ export class GalleryRouter {
     this.addGetMetaFile(app);
     this.addRandom(app);
     this.addDirectoryList(app);
+    this.addDirectoryZip(app);
 
     this.addSearch(app);
     this.addAutoComplete(app);
@@ -44,6 +45,17 @@ export class GalleryRouter {
     );
   }
 
+  protected static addDirectoryZip(app: Express): void {
+    app.get(['/api/gallery/zip/:directory(*)'],
+      // common part
+      AuthenticationMWs.authenticate,
+      AuthenticationMWs.normalizePathParam('directory'),
+      AuthenticationMWs.authorisePath('directory', true),
+
+      // specific part
+      GalleryMWs.zipDirectory
+    );
+  }
 
   protected static addGetImage(app: Express): void {
     app.get(['/api/gallery/content/:mediaPath(*\.(' + SupportedFormats.Photos.join('|') + '))'],
@@ -184,7 +196,7 @@ export class GalleryRouter {
   }
 
   protected static addSearch(app: Express): void {
-    app.get('/api/search/:searchQueryDTO',
+    app.get('/api/search/:searchQueryDTO(*)',
       // common part
       AuthenticationMWs.authenticate,
       AuthenticationMWs.authorise(UserRoles.Guest),
@@ -200,7 +212,7 @@ export class GalleryRouter {
 
 
   protected static addAutoComplete(app: Express): void {
-    app.get('/api/autocomplete/:text',
+    app.get('/api/autocomplete/:text(*)',
       // common part
       AuthenticationMWs.authenticate,
       AuthenticationMWs.authorise(UserRoles.Guest),

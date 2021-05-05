@@ -93,6 +93,14 @@ export class GalleryNavigatorComponent implements OnChanges {
     this.galleryService.setSorting(sorting);
   }
 
+  getDownloadZipLink(): string {
+    return Utils.concatUrls(Config.Client.urlBase, '/api/gallery/zip/', this.getDirectoryPath());
+  }
+
+  getDirectoryPath(): string {
+    return Utils.concatUrls(this.directory.path, this.directory.name);
+  }
+
 }
 
 interface NavigatorPath {

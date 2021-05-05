@@ -1,5 +1,6 @@
 import * as path from 'path';
 import {promises as fsp} from 'fs';
+import * as archiver from 'archiver';
 import {NextFunction, Request, Response} from 'express';
 import {ErrorCodes, ErrorDTO} from '../../common/entities/Error';
 import {DirectoryDTO, DirectoryDTOUtils} from '../../common/entities/DirectoryDTO';
@@ -16,7 +17,7 @@ import {QueryParams} from '../../common/QueryParams';
 import {VideoProcessing} from '../model/fileprocessing/VideoProcessing';
 import {SearchQueryDTO, SearchQueryTypes} from '../../common/entities/SearchQueryDTO';
 import {LocationLookupException} from '../exceptions/LocationLookupException';
-
+import {SupportedFormats} from '../../common/SupportedFormats';
 
 export class GalleryMWs {
 
@@ -56,6 +57,56 @@ export class GalleryMWs {
     }
   }
 
+  public static async zipDirectory(req: Request, res: Response, next: NextFunction): Promise<any> {
+    if (Config.Client.Other.enableDownloadZip === false) {
+      return next();
+    }
+    const directoryName = req.params.directory || '/';
+    const absoluteDirectoryName = path.join(ProjectPath.ImageFolder, directoryName);
+    try {
+      if ((await fsp.stat(absoluteDirectoryName)).isDirectory() === false) {
+        return next();
+      }
+    } catch (e) {
+      return next();
+    }
+
+    try {
+      res.set('Content-Type', 'application/zip');
+      res.set('Content-Disposition', 'attachment; filename=Gallery.zip');
+
+      const archive = archiver('zip', {
+        store: true, // disable compression
+      });
+
+      res.on('close', function() {
+        console.log('zip ' + archive.pointer() + ' bytes');
+      });
+
+      archive.on('error', function(err: any) {
+        throw err;
+      });
+
+      archive.pipe(res);
+
+      // append photos in absoluteDirectoryName
+      // using case-insensitive glob of extensions
+      for (const ext of SupportedFormats.WithDots.Photos) {
+        archive.glob(`*${ext}`, {cwd:absoluteDirectoryName, nocase:true});
+      }
+      // append videos in absoluteDirectoryName
+      // using case-insensitive glob of extensions
+      for (const ext of SupportedFormats.WithDots.Videos) {
+        archive.glob(`*${ext}`, {cwd:absoluteDirectoryName, nocase:true});
+      }
+
+      await archive.finalize();
+      return next();
+
+    } catch (err) {
+      return next(new ErrorDTO(ErrorCodes.GENERAL_ERROR, 'Error creating zip', err));
+    }
+  }
 
   public static cleanUpGalleryResults(req: Request, res: Response, next: NextFunction): any {
     if (!req.resultPipe) {

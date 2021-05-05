@@ -254,22 +254,34 @@ export class GalleryMapLightboxComponent implements OnChanges {
 
       // Setting photo icon
       if (Config.Client.Map.useImageMarkers === true) {
-        const iconTh = this.thumbnailService.getIcon(new MediaIcon(p));
-        this.thumbnailsOnLoad.push(iconTh);
-        iconTh.Visible = true;
-        const setIcon = () => {
-          mkr.setIcon(icon({
-            iconUrl: iconTh.Src,
-            iconSize: this.usedIconSize, // size of the icon
-          }));
-          mkr.options.alt = p.name;
-        };
+        mkr.on('add', () => {
+          mkr.off('add');
+          const iconTh = this.thumbnailService.getIcon(new MediaIcon(p));
+          this.thumbnailsOnLoad.push(iconTh);
+          iconTh.Visible = true;
+          const setIcon = () => {
+            mkr.setIcon(icon({
+              iconUrl: iconTh.Src,
+              iconSize: this.usedIconSize, // size of the icon
+              className: 'photo-icon'
+            }));
+            mkr.options.alt = p.name;
+            mkr.on('mouseover', () => {
+              mkr.getIcon().options.iconSize = [this.usedIconSize.x * 1.5, this.usedIconSize.y * 1.5];
+              mkr.setIcon(mkr.getIcon());
+            });
+            mkr.on('mouseout', () => {
+              mkr.getIcon().options.iconSize = this.usedIconSize;
+              mkr.setIcon(mkr.getIcon());
+            });
+          };
+          if (iconTh.Available === true) {
+            setIcon();
+          } else {
+            iconTh.OnLoad = setIcon;
+          }
+        });
 
-        if (iconTh.Available === true) {
-          setIcon();
-        } else {
-          iconTh.OnLoad = setIcon;
-        }
       }
     });
     if (this.gpxFiles) {
